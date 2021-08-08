@@ -1,0 +1,27 @@
+/*QListWidget, QListView {*/
+/*    outline: 0px;*/
+/*}*/
+
+QListWidget {
+    background: transparent;
+    border: none;
+}
+
+QListWidget::Item:selected {
+    background: rgba(211, 211, 211, 0.7);
+    border-left: 5px solid rgba(255, 0, 0, 0.7);
+}
+QListWidget::Item {
+    height: 50px;
+}
+
+/*#widget_2 {*/
+/*    background: transparent;*/
+/*}*/
+
+/*#widget_left {*/
+/*    border-left: none;*/
+/*    border-bottom: none;*/
+/*    border-right: 5px solid #e5e5e5;*/
+/*    border-top: none;*/
+/*}*/

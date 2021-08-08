@@ -1,0 +1,10 @@
+QGroupBox {
+    margin-top: 2ex;
+    font-weight: bold;
+    // font-size: 20px;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top center;
+}
