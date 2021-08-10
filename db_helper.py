@@ -7,6 +7,7 @@
 @desc    : 
 @create  : 2021/8/6 1:46 下午:18
 """
+import os
 
 import PyQt5
 import sqlite3
@@ -21,12 +22,14 @@ def dict_factory(cursor, row):
 class DBHelper:
     def __init__(self):
         super().__init__()
-
-        self.conn = sqlite3.connect('database.db')
+        db_path = 'database.db'
+        exist_db = os.path.exists(db_path)
+        self.conn = sqlite3.connect(db_path)
         self.conn.row_factory = dict_factory
-        self._create_tab_if_need()
+        if not exist_db:
+            self._create_tab()
 
-    def _create_tab_if_need(self):
+    def _create_tab(self):
         self.execute_one('''
         CREATE TABLE if not exists formula (
           id INTEGER PRIMARY KEY,
@@ -96,7 +99,7 @@ class DBHelper:
             catalyzers = ''
         res = self.execute_one(f"""
         UPDATE formula SET color_no='{color_no}',color_name='{color_name}',quality='{quality}',dyes='{dyes}'
-        ,catalyzers='{catalyzers}',update_time=CURRENT_TIMESTAMP) WHERE id={item_id}
+        ,catalyzers='{catalyzers}' WHERE id={item_id}
         """)
         return res is not None
 
