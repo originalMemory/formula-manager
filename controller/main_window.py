@@ -10,6 +10,7 @@
 from PyQt5.QtWidgets import QMainWindow
 
 from common_helper import CommonHelper
+from controller.custom_view import CustomView
 from controller.formula import FormulaView
 from ui.main_window import Ui_MainWindow
 
@@ -20,6 +21,7 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         # 创建功能区
         self.formula = FormulaView()
+        self.custom = CustomView()
 
         self.init_window()
         self.listWidget.currentRowChanged.connect(self.display)
@@ -32,6 +34,8 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):
         # 创建窗口界面
         self.listWidget.insertItem(0, '配方管理')
         self.stackedWidget.addWidget(self.formula)
+        self.listWidget.insertItem(1, '客户管理')
+        self.stackedWidget.addWidget(self.custom)
 
         # 默认显示第一个项目
         self.listWidget.setCurrentRow(0)
