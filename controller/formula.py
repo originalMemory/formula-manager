@@ -10,19 +10,20 @@
 import math
 from functools import partial
 
-from PyQt5.QtCore import QRegExp, QAbstractListModel, QModelIndex
-from PyQt5.QtGui import QDoubleValidator, QStandardItemModel
-from PyQt5.QtSql import QSqlTableModel
+from PyQt5.QtCore import QModelIndex, Qt
+from PyQt5.QtGui import QDoubleValidator, QStandardItemModel, QStandardItem
 from PyQt5.QtWidgets import QWidget, QMessageBox
 
 from db_helper import db_helper
+from model.formula import Formula, FormulaItem
+from model.formula_list_model import FormulaListModel
 from model.my_list_model import MyListModel
 from ui.formula import Ui_Formula
 
 
-class Formula(QWidget, Ui_Formula):
+class FormulaView(QWidget, Ui_Formula):
     def __init__(self, parent=None):
-        super(Formula, self).__init__(parent)
+        super(FormulaView, self).__init__(parent)
         self.setupUi(self)
 
         # 限制只能输入数字和小数点
@@ -37,9 +38,18 @@ class Formula(QWidget, Ui_Formula):
         self.pushButtonFormulaSearch.clicked.connect(self._search_formula)
         self.pushButtonPrePage.clicked.connect(partial(self._change_page, -1))
         self.pushButtonNextPage.clicked.connect(partial(self._change_page, 1))
+        self.pushButtonDyeAdd.clicked.connect(self._add_dye)
+        self.pushButtonDyeDel.clicked.connect(self._del_dye)
+        self.pushButtonDyeEdit.clicked.connect(self._update_dye)
+        self.pushButtonDyeSearch.clicked.connect(self._search_dye)
+        self.pushButtonCatalyzerAdd.clicked.connect(self._add_catalyzer)
+        self.pushButtonCatalyzerDel.clicked.connect(self._del_catalyzer)
+        self.pushButtonCatalyzerEdit.clicked.connect(self._update_catalyzer)
+        self.pushButtonCatalyzerSearch.clicked.connect(self._search_catalyzer)
 
         # 初始化数据
-        self.formula_model = MyListModel(show_name='color_no')  # sql数据模型
+        self.formula_model = FormulaListModel()  # 数据模型
+        self.formula_index = -1
         self.listViewFormula.setModel(self.formula_model)
         self.listViewFormula.selectionModel().currentChanged.connect(self._on_current_formula_change)
         self.page_index = 0  # 当前所在页
@@ -52,12 +62,18 @@ class Formula(QWidget, Ui_Formula):
         self._load_formula()
 
         # 初始化染料和催化剂
+        self.dyes = []
+        self.dye_index = -1
         self.dye_model = QStandardItemModel()
-        self.dye_model.setHorizontalHeaderLabels(['名称', '数量'])
         self.tableViewDye.setModel(self.dye_model)
+        self.tableViewDye.selectionModel().currentChanged.connect(self._on_current_dye_change)
+        self._load_dye()
+        self.catalyzers = []
+        self.catalyzer_index = -1
         self.catalyzer_model = QStandardItemModel()
-        self.catalyzer_model.setHorizontalHeaderLabels(['名称', '数量'])
         self.tableViewCatalyzer.setModel(self.catalyzer_model)
+        self.tableViewCatalyzer.selectionModel().currentChanged.connect(self._on_current_catalyzer_change)
+        self._load_catalyzer()
 
     def _add_formula(self):
         color_no = self.lineEditColorNo.text()
@@ -66,7 +82,12 @@ class Formula(QWidget, Ui_Formula):
         if not color_no:
             QMessageBox.information(self, "提示", "未输入色号！", QMessageBox.Ok)
             return
-        db_helper.insert_formula(color_no=color_no, color_name=color_name, quality=quality, dyes='', catalyzers='')
+        dyes = [x.to_str() for x in self.dyes]
+        dyes = '\n'.join(dyes)
+        catalyzers = [x.to_str() for x in self.catalyzers]
+        catalyzers = '\n'.join(catalyzers)
+        db_helper.insert_formula(color_no=color_no, color_name=color_name, quality=quality, dyes=dyes,
+                                 catalyzers=catalyzers)
         self._load_formula()
 
     def _del_formula(self):
@@ -76,19 +97,42 @@ class Formula(QWidget, Ui_Formula):
         ids = []
         for i in range(len(select_rows)):
             index = select_rows[i]
-            item = self.formula_model.get_item(index.row() - i)
-            ids.append(item['id'])
+            item = self.formula_model.delete_item(index.row() - i)
+            ids.append(str(item.formula_id))
         db_helper.delete('formula', ids)
+        self.formula_index = -1
+        self.listViewFormula.clearSelection()
+        self.lineEditColorNo.clear()
+        self.lineEditColorName.clear()
+        self.lineEditQuality.clear()
+        self.lineEditDyeName.clear()
+        self.lineEditDyeNum.clear()
+        self.lineEditCatalyzerName.clear()
+        self.lineEditCatalyzerNum.clear()
+        self.dyes.clear()
+        self.catalyzers.clear()
+        self._load_dye()
+        self._load_catalyzer()
 
     def _update_formula(self):
+        if self.formula_index < 0 or self.formula_index >= self.formula_model.rowCount():
+            QMessageBox.information(self, "提示", "未选择配方，无法更新！", QMessageBox.Ok)
+            return
         color_no = self.lineEditColorNo.text()
-        color_name = self.lineEditColorName.text()
-        quality = self.lineEditQuality.text()
         if not color_no:
             QMessageBox.information(self, "提示", "未输入色号！", QMessageBox.Ok)
             return
-        db_helper.insert_formula(color_no=color_no, color_name=color_name, quality=quality, dyes='', catalyzers='')
-        self._load_formula()
+        formula = self.formula_model.get_item(self.formula_index)
+        color_name = self.lineEditColorName.text()
+        quality = self.lineEditQuality.text()
+        dyes = [x.to_str() for x in self.dyes]
+        dyes = '\n'.join(dyes)
+        catalyzers = [x.to_str() for x in self.catalyzers]
+        catalyzers = '\n'.join(catalyzers)
+        db_helper.update_formula(item_id=formula.formula_id, color_no=color_no, color_name=color_name, quality=quality,
+                                 dyes=dyes, catalyzers=catalyzers)
+        new_formula = db_helper.search_one_formula(formula.formula_id)
+        self.formula_model.update_item(self.formula_index, new_formula)
 
     def _search_formula(self):
         self.where_sql = ''
@@ -107,31 +151,24 @@ class Formula(QWidget, Ui_Formula):
     def _load_formula(self):
         self.count = db_helper.get_table_count(self.count_sql + self.where_sql)
         formulas = db_helper.execute_all(self.query_sql + self.where_sql)
+        formulas = [Formula.from_dict(x) for x in formulas]
         self.formula_model.clear()
         self.formula_model.add_items(formulas)
-
-    def _load_dye_and_catalyzer(self):
-        self.dye_model = QStandardItemModel()
 
     def _change_page(self, value):
         self.page_index += value
         if self.page_index < 0:
             self.page_index = 0
+            QMessageBox.information(self, "提示", "已经是第1页了！", QMessageBox.Ok)
             return
         max_page = math.ceil(self.count / self.page_size)
         if self.page_index >= max_page:
             self.page_index = max_page - 1
-        self.labelPage.setText(str(self.page_index + 1))
-        self._load_formula()
-
-    # region
-
-    def _add_dye(self):
-        name = self.lineEditDyeName.text()
-        num = self.lineEditDyeNum.text()
-        if not name or not num:
-            QMessageBox('提示', '染料名称或数量不能为空！', QMessageBox.Ok)
+            QMessageBox.information(self, "提示", "已经是最后1页了！", QMessageBox.Ok)
             return
+        page_str = f'{self.page_index + 1}/{max_page}'
+        self.labelPage.setText(page_str)
+        self._load_formula()
 
     def _on_current_formula_change(self, current: QModelIndex, previous: QModelIndex):
         """
@@ -140,8 +177,176 @@ class Formula(QWidget, Ui_Formula):
         :param previous:
         :return:
         """
-        formula = self.formula_model.get_item(current.row())
-        self.dyes = [x.split(';') for x in formula['dyes'].split('\n')]
-        self.catalyzers = [x.split(';') for x in formula['catalyzers'].split('\n')]
+        index = current.row()
+        self.formula_index = index
+        formula = self.formula_model.get_item(index)
+        self.lineEditColorNo.setText(formula.color_no)
+        self.lineEditColorName.setText(formula.color_name)
+        self.lineEditQuality.setText(formula.quality)
+        self.dyes = formula.dyes
+        self.catalyzers = formula.catalyzers
+        self._load_dye()
+        self._load_catalyzer()
+
+    # region 染料
+
+    def _on_current_dye_change(self, current: QModelIndex, previous: QModelIndex):
+        """
+        图片列表当前行变化事件
+        :param current: 当前行索引
+        :param previous:
+        :return:
+        """
+        self.dye_index = current.row()
+        cur_dye = self.dyes[self.dye_index]
+        self.lineEditDyeName.setText(cur_dye.name)
+        self.lineEditDyeNum.setText(cur_dye.value)
+
+    def _load_dye(self):
+        """
+        加载染料和催化剂数据
+        :return:
+        """
+        self.dye_model.clear()
+        self.dye_model.setHorizontalHeaderLabels(['名称', '数量'])
+        for dye in self.dyes:
+            self.dye_model.appendRow([QStandardItem(dye.name), QStandardItem(dye.value)])
+
+    def _add_dye(self):
+        name = self.lineEditDyeName.text()
+        num = self.lineEditDyeNum.text()
+        if not name or not num:
+            QMessageBox.information(self, '提示', '染料名称或数量不能为空！', QMessageBox.Ok)
+            return
+        self.dyes.append(FormulaItem(name=name, value=num))
+        self.dye_model.appendRow([QStandardItem(name), QStandardItem(num)])
+        self.tableViewDye.clearSelection()
+        self.tableViewDye.selectRow(len(self.dyes) - 1)
+        self.lineEditDyeName.clearFocus()
+        self.lineEditDyeNum.clearFocus()
+
+    def _update_dye(self):
+        if not self._valid_dye_index():
+            QMessageBox.information(self, '提示', '未选中染料！', QMessageBox.Ok)
+            return
+        name = self.lineEditDyeName.text()
+        num = self.lineEditDyeNum.text()
+        if not name or not num:
+            QMessageBox.information(self, '提示', '染料名称或数量不能为空！', QMessageBox.Ok)
+            return
+        self.dyes[self.dye_index] = FormulaItem(name=name, value=num)
+        self.dye_model.setItem(self.dye_index, 0, QStandardItem(name))
+        self.dye_model.setItem(self.dye_index, 1, QStandardItem(num))
+        self.lineEditDyeName.clearFocus()
+        self.lineEditDyeNum.clearFocus()
+
+    def _del_dye(self):
+        if not self._valid_dye_index():
+            QMessageBox.information(self, '提示', '未选中染料！', QMessageBox.Ok)
+            return
+        del self.dyes[self.dye_index]
+        # self.tableViewDye.clearSelection()
+        self.dye_model.removeRow(self.dye_index)
+        self.lineEditDyeName.clear()
+        self.lineEditDyeNum.clear()
+        self.dye_index = -1
+
+    def _search_dye(self):
+        name = self.lineEditDyeName.text()
+        formula = self.formula_model.get_item(self.formula_index)
+        dyes = formula.dyes
+        if name:
+            dyes = [x for x in dyes if name in x.name]
+        num = self.lineEditDyeNum.text()
+        if num:
+            dyes = [x for x in dyes if num in x.value]
+        self.dyes = dyes
+        self.dye_index = -1
+        self._load_dye()
+
+    def _valid_dye_index(self):
+        return 0 <= self.dye_index < len(self.dyes)
+
+    # endregion
+
+    # region 催化剂
+
+    def _on_current_catalyzer_change(self, current: QModelIndex, previous: QModelIndex):
+        """
+        图片列表当前行变化事件
+        :param current: 当前行索引
+        :param previous:
+        :return:
+        """
+        self.catalyzer_index = current.row()
+        cur_catalyzer = self.catalyzers[self.catalyzer_index]
+        self.lineEditCatalyzerName.setText(cur_catalyzer.name)
+        self.lineEditCatalyzerNum.setText(f'{cur_catalyzer.value}%')
+
+    def _load_catalyzer(self):
+        """
+        加载催化剂和催化剂数据
+        :return:
+        """
+        self.catalyzer_model.clear()
+        self.catalyzer_model.setHorizontalHeaderLabels(['名称', '百分比'])
+        for catalyzer in self.catalyzers:
+            self.catalyzer_model.appendRow([QStandardItem(catalyzer.name), QStandardItem(f'{catalyzer.value}%')])
+
+    def _add_catalyzer(self):
+        name = self.lineEditCatalyzerName.text()
+        num = self.lineEditCatalyzerNum.text()
+        if not name or not num:
+            QMessageBox.information(self, '提示', '催化剂名称或数量不能为空！', QMessageBox.Ok)
+            return
+        self.catalyzers.append(FormulaItem(name=name, value=num))
+        self.catalyzer_model.appendRow([QStandardItem(name), QStandardItem(f'{num}%')])
+        self.tableViewCatalyzer.clearSelection()
+        self.tableViewCatalyzer.selectRow(len(self.catalyzers) - 1)
+        self.lineEditCatalyzerName.clearFocus()
+        self.lineEditCatalyzerNum.clearFocus()
+
+    def _update_catalyzer(self):
+        if not self._valid_catalyzer_index():
+            QMessageBox.information(self, '提示', '未选中催化剂！', QMessageBox.Ok)
+            return
+        name = self.lineEditCatalyzerName.text()
+        num = self.lineEditCatalyzerNum.text()
+        num = num.replace('%', '')
+        if not name or not num:
+            QMessageBox.information(self, '提示', '催化剂名称或数量不能为空！', QMessageBox.Ok)
+            return
+        self.catalyzers[self.catalyzer_index] = FormulaItem(name=name, value=num)
+        self.catalyzer_model.setItem(self.catalyzer_index, 0, QStandardItem(name))
+        self.catalyzer_model.setItem(self.catalyzer_index, 1, QStandardItem(f'{num}%'))
+        self.lineEditCatalyzerName.clearFocus()
+        self.lineEditCatalyzerNum.clearFocus()
+
+    def _del_catalyzer(self):
+        if not self._valid_catalyzer_index():
+            QMessageBox.information(self, '提示', '未选中催化剂！', QMessageBox.Ok)
+            return
+        del self.catalyzers[self.catalyzer_index]
+        # self.tableViewCatalyzer.clearSelection()
+        self.catalyzer_model.removeRow(self.catalyzer_index)
+        self.lineEditCatalyzerName.clear()
+        self.lineEditCatalyzerNum.clear()
+        self.catalyzer_index = -1
+
+    def _search_catalyzer(self):
+        name = self.lineEditCatalyzerName.text()
+        formula = self.formula_model.get_item(self.formula_index)
+        catalyzers = formula.catalyzers
+        if name:
+            catalyzers = [x for x in catalyzers if name in x.name]
+        num = self.lineEditCatalyzerNum.text()
+        if num:
+            catalyzers = [x for x in catalyzers if num in x.value]
+        self.catalyzers = catalyzers
+        self.catalyzer_index = -1
+        self._load_catalyzer()
+
+    def _valid_catalyzer_index(self):
+        return 0 <= self.catalyzer_index < len(self.catalyzers)
 
     # endregion

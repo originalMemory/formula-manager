@@ -12,6 +12,8 @@ import os
 import PyQt5
 import sqlite3
 
+from model.formula import Formula
+
 
 def dict_factory(cursor, row):
     d = {}
@@ -102,6 +104,11 @@ class DBHelper:
         ,catalyzers='{catalyzers}' WHERE id={item_id}
         """)
         return res is not None
+
+    def search_one_formula(self, formula_id):
+        res = self.execute_one(f'SELECT * FROM formula WHERE id={formula_id}')
+        if res:
+            return Formula.from_dict(res)
 
     def delete(self, table, ids):
         res = self.execute_one(f'DELETE FROM {table} WHERE id in ({",".join(ids)})')

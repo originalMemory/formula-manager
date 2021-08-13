@@ -9,6 +9,7 @@
 @create  : 2019/6/5 22:23:20
 @update  :
 """
+from abc import abstractmethod
 
 from PyQt5.QtCore import QAbstractListModel, QModelIndex, QVariant, Qt
 
@@ -18,10 +19,9 @@ class MyListModel(QAbstractListModel):
     Model类，用于listView展示
     """
 
-    def __init__(self, show_name):
+    def __init__(self):
         super().__init__()
         self._data_list = []  # 数据list，保存所有数据
-        self._show_name = show_name
 
     def data(self, index: QModelIndex, role: int = ...):
         """
@@ -33,9 +33,18 @@ class MyListModel(QAbstractListModel):
         # 设置表格显示使用的数据
         if index.isValid() or (0 <= index.row() < len(self._data_list)):
             if role == Qt.DisplayRole:
-                return QVariant(self._data_list[index.row()][self._show_name])
+                return QVariant(self._get_display_role(index.row()))
         else:
             return QVariant()
+
+    @abstractmethod
+    def _get_display_role(self, row):
+        """
+        根据索引获取对应位置显示的值
+        :param row:
+        :return:
+        """
+        pass
 
     def rowCount(self, parent: QModelIndex = ...) -> int:
         """
@@ -74,8 +83,21 @@ class MyListModel(QAbstractListModel):
         :return:
         """
         self.beginRemoveRows(QModelIndex(), row, row - 1)
+        item = self._data_list[row]
         del self._data_list[row]
         self.endRemoveRows()
+        return item
+
+    def update_item(self, row, new_item):
+        """
+        自定义。更新数据
+        :param row: 索引
+        :param new_item:
+        :return:
+        """
+        self._data_list[row] = new_item
+        index = self.index(row, 0)
+        self.dataChanged.emit(index, index, [Qt.DisplayRole])
 
     def get_item(self, row):
         """
@@ -85,33 +107,6 @@ class MyListModel(QAbstractListModel):
         """
         if -1 < row < len(self._data_list):
             return self._data_list[row]
-
-    def get_index(self, key):
-        """
-        自定义。获取数据的的字段值获取对应索引
-        :param key: 数据的字段值，有id和name两种，分别为数字和字符串类型
-        :return:
-        """
-        # 如果是数字类型，则以id进行对比
-        if isinstance(key, int):
-            for i in range(len(self._data_list)):
-                if key == self._data_list[i]['id']:
-                    return i
-        elif isinstance(key, str):
-            for i in range(len(self._data_list)):
-                if key == self._data_list[i][self._show_name]:
-                    return i
-        return 0
-
-    def get_id(self, index):
-        """
-        自定义。根据索引获取对应数据的id
-        :param index: 索引
-        :return:
-        """
-        if -1 < index < len(self._data_list):
-            return self._data_list[index]['id']
-        return 0
 
     def clear(self):
         """
