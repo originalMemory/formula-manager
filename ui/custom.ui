@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1168</width>
-    <height>739</height>
+    <width>1189</width>
+    <height>924</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,6 +23,18 @@
          <horstretch>0</horstretch>
          <verstretch>1</verstretch>
         </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>150</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>150</height>
+        </size>
        </property>
        <property name="title">
         <string>客户管理区</string>
@@ -149,19 +161,19 @@
              </sizepolicy>
             </property>
             <property name="title">
-             <string>所有配方区</string>
+             <string>查询所有配方区（用户未持有）</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignCenter</set>
             </property>
-            <layout class="QHBoxLayout" name="horizontalLayout_3">
+            <layout class="QVBoxLayout" name="verticalLayout_6">
              <item>
               <layout class="QVBoxLayout" name="verticalLayout_3">
                <item>
                 <widget class="QWidget" name="widget_2" native="true">
                  <property name="minimumSize">
                   <size>
-                   <width>0</width>
+                   <width>400</width>
                    <height>60</height>
                   </size>
                  </property>
@@ -201,7 +213,81 @@
                    <string>搜索</string>
                   </property>
                  </widget>
+                 <widget class="QPushButton" name="pushButtonCustomFormulaAdd">
+                  <property name="geometry">
+                   <rect>
+                    <x>260</x>
+                    <y>18</y>
+                    <width>75</width>
+                    <height>23</height>
+                   </rect>
+                  </property>
+                  <property name="text">
+                   <string>&gt;&gt;添加&gt;&gt;</string>
+                  </property>
+                 </widget>
                 </widget>
+               </item>
+               <item>
+                <layout class="QGridLayout" name="gridLayout_4" rowminimumheight="0">
+                 <property name="leftMargin">
+                  <number>10</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>5</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>10</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>5</number>
+                 </property>
+                 <property name="verticalSpacing">
+                  <number>4</number>
+                 </property>
+                 <item row="0" column="0">
+                  <widget class="QPushButton" name="pushButtonPrePage">
+                   <property name="maximumSize">
+                    <size>
+                     <width>150</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>上一页</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QLabel" name="labelPage">
+                   <property name="maximumSize">
+                    <size>
+                     <width>150</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>1/1</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="2">
+                  <widget class="QPushButton" name="pushButtonNextPage">
+                   <property name="maximumSize">
+                    <size>
+                     <width>150</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>下一页</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
                </item>
                <item>
                 <widget class="QListView" name="listViewAllFormula"/>
@@ -232,7 +318,7 @@
                 <widget class="QWidget" name="widget_3" native="true">
                  <property name="minimumSize">
                   <size>
-                   <width>0</width>
+                   <width>400</width>
                    <height>60</height>
                   </size>
                  </property>
@@ -270,6 +356,19 @@
                   </property>
                   <property name="text">
                    <string>搜索</string>
+                  </property>
+                 </widget>
+                 <widget class="QPushButton" name="pushButtonCustomFormulaDel">
+                  <property name="geometry">
+                   <rect>
+                    <x>260</x>
+                    <y>18</y>
+                    <width>75</width>
+                    <height>23</height>
+                   </rect>
+                  </property>
+                  <property name="text">
+                   <string>&lt;&lt;移除&lt;&lt;</string>
                   </property>
                  </widget>
                 </widget>
