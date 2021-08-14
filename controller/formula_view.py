@@ -53,12 +53,11 @@ class FormulaView(QWidget, Ui_Formula):
         self.listViewFormula.setModel(self.formula_model)
         self.listViewFormula.selectionModel().currentChanged.connect(self._on_current_formula_change)
         self.page_index = 0  # 当前所在页
-        self.page_size = 200  # 每页数据量
+        self.page_size = 2  # 每页数据量
         self.count = 0  # 总数
         # 查询语句，返回项即为表格中列。left join 用于多表联查，where 1=1无意义，仅便于后续添加查询条件
         self.query_sql = 'select * from formula where 1=1 '
         self.where_sql = ''  # 条件语句
-        self.count_sql = 'select count(*) from formula where 1=1 '  # 获取数据总数语句
         self._load_formula()
 
         # 初始化染料和催化剂
@@ -149,11 +148,17 @@ class FormulaView(QWidget, Ui_Formula):
         self._load_formula()
 
     def _load_formula(self):
-        self.count = db_helper.get_table_count(self.count_sql + self.where_sql)
-        formulas = db_helper.execute_all(self.query_sql + self.where_sql)
+        page_sql = f" limit {self.page_size} offset {self.page_index * self.page_size}"
+        sql = self.query_sql + self.where_sql + page_sql
+        formulas = db_helper.execute_all(sql)
         formulas = [Formula.from_dict(x) for x in formulas]
         self.formula_model.clear()
         self.formula_model.add_items(formulas)
+
+        self.count = db_helper.get_table_count('select count(*) from formula where 1=1 ' + self.where_sql)
+        max_page = math.ceil(self.count / self.page_size)
+        page_str = f'{self.page_index + 1}/{max_page}'
+        self.labelPage.setText(page_str)
 
     def _change_page(self, value):
         self.page_index += value
@@ -166,8 +171,6 @@ class FormulaView(QWidget, Ui_Formula):
             self.page_index = max_page - 1
             QMessageBox.information(self, "提示", "已经是最后1页了！", QMessageBox.Ok)
             return
-        page_str = f'{self.page_index + 1}/{max_page}'
-        self.labelPage.setText(page_str)
         self._load_formula()
 
     def _on_current_formula_change(self, current: QModelIndex, previous: QModelIndex):

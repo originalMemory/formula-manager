@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import QMainWindow
 
 from common_helper import CommonHelper
 from controller.custom_view import CustomView
-from controller.formula import FormulaView
+from controller.formula_view import FormulaView
 from ui.main_window import Ui_MainWindow
 
 

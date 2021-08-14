@@ -76,6 +76,15 @@ class MyListModel(QAbstractListModel):
             self._data_list.extend(item_data_list)
             self.endInsertRows()
 
+    def set_items(self, data_list):
+        """
+        自定义，设置数据列表
+        :param data_list:
+        :return:
+        """
+        self.clear()
+        self.add_items(data_list)
+
     def delete_item(self, row):
         """
         自定义。删除数据
