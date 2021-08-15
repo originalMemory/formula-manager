@@ -19,9 +19,9 @@ QListWidget::Item {
 /*    background: transparent;*/
 /*}*/
 
-/*#widget_left {*/
-/*    border-left: none;*/
-/*    border-bottom: none;*/
-/*    border-right: 5px solid #e5e5e5;*/
-/*    border-top: none;*/
-/*}*/
+#listWidget {
+    border-left: none;
+    border-bottom: none;
+    border-right: 5px solid #e5e5e5;
+    border-top: none;
+}

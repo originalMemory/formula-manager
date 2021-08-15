@@ -88,19 +88,12 @@ class FormulaView(QWidget, Ui_Formula):
         db_helper.insert_formula(color_no=color_no, color_name=color_name, quality=quality, dyes=dyes,
                                  catalyzers=catalyzers)
         self._load_formula()
+        self._clear_cur()
 
-    def _del_formula(self):
-        select_rows = self.listViewFormula.selectionModel().selectedRows()
-        if len(select_rows) == 0:
-            return
-        ids = []
-        for i in range(len(select_rows)):
-            index = select_rows[i]
-            item = self.formula_model.delete_item(index.row() - i)
-            ids.append(str(item.formula_id))
-        db_helper.delete('formula', ids)
+    def _clear_cur(self):
         self.formula_index = -1
-        self.listViewFormula.clearSelection()
+        self.dye_index = -1
+        self.catalyzer_index = -1
         self.lineEditColorNo.clear()
         self.lineEditColorName.clear()
         self.lineEditQuality.clear()
@@ -112,6 +105,19 @@ class FormulaView(QWidget, Ui_Formula):
         self.catalyzers.clear()
         self._load_dye()
         self._load_catalyzer()
+
+    def _del_formula(self):
+        select_rows = self.listViewFormula.selectionModel().selectedRows()
+        if len(select_rows) == 0:
+            return
+        ids = []
+        for i in range(len(select_rows)):
+            index = select_rows[i]
+            item = self.formula_model.delete_item(index.row() - i)
+            ids.append(str(item.formula_id))
+        db_helper.delete('formula', ids)
+        self._load_formula()
+        self._clear_cur()
 
     def _update_formula(self):
         if self.formula_index < 0 or self.formula_index >= self.formula_model.rowCount():
@@ -145,6 +151,11 @@ class FormulaView(QWidget, Ui_Formula):
         if quality:
             self.where_sql = f"AND quality LIKE '%{quality}%'"
         self.page_index = 0
+        self.dyes.clear()
+        self.catalyzers.clear()
+        self._load_dye()
+        self._load_catalyzer()
+
         self._load_formula()
 
     def _load_formula(self):
@@ -186,8 +197,12 @@ class FormulaView(QWidget, Ui_Formula):
         self.lineEditColorNo.setText(formula.color_no)
         self.lineEditColorName.setText(formula.color_name)
         self.lineEditQuality.setText(formula.quality)
-        self.dyes = formula.dyes
-        self.catalyzers = formula.catalyzers
+        self.dyes = list(formula.dyes)
+        self.catalyzers = list(formula.catalyzers)
+        self.lineEditDyeName.clear()
+        self.lineEditDyeNum.clear()
+        self.lineEditCatalyzerName.clear()
+        self.lineEditCatalyzerNum.clear()
         self._load_dye()
         self._load_catalyzer()
 
@@ -253,6 +268,7 @@ class FormulaView(QWidget, Ui_Formula):
         self.lineEditDyeName.clear()
         self.lineEditDyeNum.clear()
         self.dye_index = -1
+        self.tableViewDye.clearSelection()
 
     def _search_dye(self):
         name = self.lineEditDyeName.text()
@@ -284,7 +300,7 @@ class FormulaView(QWidget, Ui_Formula):
         self.catalyzer_index = current.row()
         cur_catalyzer = self.catalyzers[self.catalyzer_index]
         self.lineEditCatalyzerName.setText(cur_catalyzer.name)
-        self.lineEditCatalyzerNum.setText(f'{cur_catalyzer.value}%')
+        self.lineEditCatalyzerNum.setText(str(cur_catalyzer.value))
 
     def _load_catalyzer(self):
         """
@@ -302,6 +318,7 @@ class FormulaView(QWidget, Ui_Formula):
         if not name or not num:
             QMessageBox.information(self, '提示', '催化剂名称或数量不能为空！', QMessageBox.Ok)
             return
+        num = float(num)
         self.catalyzers.append(FormulaItem(name=name, value=float(num)))
         self.catalyzer_model.appendRow([QStandardItem(name), QStandardItem(f'{num}%')])
         self.tableViewCatalyzer.clearSelection()
@@ -335,6 +352,7 @@ class FormulaView(QWidget, Ui_Formula):
         self.lineEditCatalyzerName.clear()
         self.lineEditCatalyzerNum.clear()
         self.catalyzer_index = -1
+        self.tableViewCatalyzer.clearSelection()
 
     def _search_catalyzer(self):
         name = self.lineEditCatalyzerName.text()

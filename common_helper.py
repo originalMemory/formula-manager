@@ -41,34 +41,3 @@ class CommonHelper:
 
         return date
 
-    # @staticmethod
-    # def export_excel(parent_widget, headers, filename, model):
-    #     workbook = Workbook()
-    #     sheet = workbook.active  # 获取当前活跃的sheet,默认是第一个sheet
-    #
-    #     # 设置列名
-    #     sheet.append(headers)
-    #
-    #     row_count = model.rowCount()
-    #     col_count = model.columnCount()
-    #
-    #     for row in range(row_count):
-    #         for col in range(col_count):
-    #             value = model.data(model.index(row, col))
-    #             if isinstance(value, QDateTime):
-    #                 value = value.toString("yyyy-MM-dd hh:mm:ss")
-    #             else:
-    #                 value = str(value)
-    #             sheet.cell(row + 2, col + 1).value = value
-    #
-    #     export_dir = os.path.join(config.cur_dir_path, "export")
-    #     if not os.path.exists(export_dir):
-    #         os.makedirs(export_dir)
-    #     export_file = os.path.join(export_dir, filename)
-    #     try:
-    #         if os.path.exists(export_file):
-    #             os.remove(export_file)
-    #         workbook.save(export_file)
-    #         os.system("start explorer %s" % export_dir)
-    #     except Exception as e:
-    #         QMessageBox.information(parent_widget, "提示", str(e), QMessageBox.Ok)

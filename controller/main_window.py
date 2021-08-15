@@ -34,11 +34,11 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):
 
     def init_window(self):
         # 创建窗口界面
-        self.listWidget.insertItem(0, '配方管理')
+        self.listWidget.addItem('配方管理')
         self.stackedWidget.addWidget(self.formula)
-        self.listWidget.insertItem(1, '客户管理')
+        self.listWidget.addItem('客户管理')
         self.stackedWidget.addWidget(self.custom)
-        self.listWidget.insertItem(1, '导出管理')
+        self.listWidget.addItem('导出管理')
         self.stackedWidget.addWidget(self.export)
 
         # 默认显示第一个项目
