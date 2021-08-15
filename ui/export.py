@@ -73,4 +73,4 @@ class Ui_Export(object):
         self.pushButtonSearch.setText(_translate("Export", "搜索"))
         self.pushButtonExport.setText(_translate("Export", "导出Excel"))
         self.pushButtonCompute.setText(_translate("Export", "计算总量"))
-        self.groupBox_2.setTitle(_translate("Export", "导出结果"))
+        self.groupBox_2.setTitle(_translate("Export", "查询结果"))

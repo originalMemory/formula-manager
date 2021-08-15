@@ -8,8 +8,11 @@
 @desc    : 
 @create  : 2021/8/14
 """
+import os
+
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QDoubleValidator
-from PyQt5.QtWidgets import QWidget, QMessageBox
+from PyQt5.QtWidgets import QWidget, QMessageBox, QFileDialog
+from openpyxl import Workbook
 
 from db_helper import db_helper
 from model.formula import Formula
@@ -26,6 +29,7 @@ class ExportView(QWidget, Ui_Export):
 
         self.pushButtonSearch.clicked.connect(self._search)
         self.pushButtonCompute.clicked.connect(self._compute)
+        self.pushButtonExport.clicked.connect(self.export_excel)
         self.lineEditCustomName.returnPressed.connect(self._search)
         self.lineEditColorNo.returnPressed.connect(self._search)
         self.lineEditWeight.returnPressed.connect(self._compute)
@@ -99,3 +103,61 @@ class ExportView(QWidget, Ui_Export):
 
             if i <= formula_length - 1:
                 self.model.appendRow([])
+
+    def export_excel(self):
+        file_paths = QFileDialog.getSaveFileName(self, '导出文件', filter="xlsx files (*.xlsx)")
+        if not len(file_paths) or not file_paths[0]:
+            return
+        export_file = file_paths[0]
+        workbook = Workbook()
+
+        custom_name = self.lineEditCustomName.text()
+        weight_text = self.lineEditWeight.text()
+        if weight_text:
+            weight = float(weight_text)
+        else:
+            weight = 0.0
+        formula_length = len(self.formulas)
+        for i in range(formula_length):
+            formula = self.formulas[i]
+            if i == 0:
+                # workbook.create_sheet()
+                sheet = workbook.worksheets[0]
+                sheet.title = formula.color_no
+            else:
+                sheet = workbook.create_sheet(title=formula.color_no)
+
+            sheet.append(['客户', custom_name, '色号', formula.color_no, '颜色', formula.color_name])
+            sheet.append(['品质', formula.quality, '重量', str(weight)])
+
+            dye_length = len(formula.dyes)
+            for j in range(dye_length):
+                dye = formula.dyes[j]
+                if j == 0:
+                    pre = '染料'
+                else:
+                    pre = ''
+                sheet.append([pre, dye.name, str(dye.value * weight * 4.54)])
+            catalyzer_length = len(formula.catalyzers)
+            for j in range(catalyzer_length):
+                catalyzer = formula.catalyzers[j]
+                if j == 0:
+                    pre = '催化剂'
+                else:
+                    pre = ''
+                sheet.append([pre, catalyzer.name, f'{catalyzer.value}%'])
+
+        try:
+            if os.path.exists(export_file):
+                os.remove(export_file)
+            workbook.save(export_file)
+            res = QMessageBox.information(self, "提示", "保存成功，是否打开保存文件夹？", QMessageBox.Ok | QMessageBox.Cancel)
+            if res == QMessageBox.Ok:
+                path = os.path.dirname(export_file)
+                path = path.replace('/', '\\')
+                os.system("explorer %s" % path)
+
+        except Exception as e:
+            QMessageBox.information(self, "提示", str(e), QMessageBox.Ok)
+
+
