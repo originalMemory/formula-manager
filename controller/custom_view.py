@@ -53,7 +53,7 @@ class CustomView(QWidget, Ui_Custom):
         self._load_custom(name_filter='')
 
         self.page_index = 0  # 当前所在页
-        self.page_size = 2  # 每页数据量
+        self.page_size = 200  # 每页数据量
         self.all_formula_model = FormulaListModel()
         self.listViewAllFormula.setModel(self.all_formula_model)
         self.custom_formula_ids = []

@@ -165,7 +165,7 @@ class DBHelper:
         if not item_id or not name:
             return False
         formula_ids = [str(x) for x in formula_ids]
-        formula_ids = ';'.join(formula_ids)
+        formula_ids = ','.join(formula_ids)
         res = self.execute_one(f"""
         UPDATE custom SET name='{name}',formula_ids='{formula_ids}' WHERE id={item_id}
         """)

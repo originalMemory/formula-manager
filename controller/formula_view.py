@@ -53,7 +53,7 @@ class FormulaView(QWidget, Ui_Formula):
         self.listViewFormula.setModel(self.formula_model)
         self.listViewFormula.selectionModel().currentChanged.connect(self._on_current_formula_change)
         self.page_index = 0  # 当前所在页
-        self.page_size = 2  # 每页数据量
+        self.page_size = 200  # 每页数据量
         self.count = 0  # 总数
         # 查询语句，返回项即为表格中列。left join 用于多表联查，where 1=1无意义，仅便于后续添加查询条件
         self.query_sql = 'select * from formula where 1=1 '
@@ -203,7 +203,7 @@ class FormulaView(QWidget, Ui_Formula):
         self.dye_index = current.row()
         cur_dye = self.dyes[self.dye_index]
         self.lineEditDyeName.setText(cur_dye.name)
-        self.lineEditDyeNum.setText(cur_dye.value)
+        self.lineEditDyeNum.setText(str(cur_dye.value))
 
     def _load_dye(self):
         """
@@ -213,7 +213,7 @@ class FormulaView(QWidget, Ui_Formula):
         self.dye_model.clear()
         self.dye_model.setHorizontalHeaderLabels(['名称', '数量'])
         for dye in self.dyes:
-            self.dye_model.appendRow([QStandardItem(dye.name), QStandardItem(dye.value)])
+            self.dye_model.appendRow([QStandardItem(dye.name), QStandardItem(str(dye.value))])
 
     def _add_dye(self):
         name = self.lineEditDyeName.text()
@@ -237,7 +237,7 @@ class FormulaView(QWidget, Ui_Formula):
         if not name or not num:
             QMessageBox.information(self, '提示', '染料名称或数量不能为空！', QMessageBox.Ok)
             return
-        self.dyes[self.dye_index] = FormulaItem(name=name, value=num)
+        self.dyes[self.dye_index] = FormulaItem(name=name, value=float(num))
         self.dye_model.setItem(self.dye_index, 0, QStandardItem(name))
         self.dye_model.setItem(self.dye_index, 1, QStandardItem(num))
         self.lineEditDyeName.clearFocus()
@@ -302,7 +302,7 @@ class FormulaView(QWidget, Ui_Formula):
         if not name or not num:
             QMessageBox.information(self, '提示', '催化剂名称或数量不能为空！', QMessageBox.Ok)
             return
-        self.catalyzers.append(FormulaItem(name=name, value=num))
+        self.catalyzers.append(FormulaItem(name=name, value=float(num)))
         self.catalyzer_model.appendRow([QStandardItem(name), QStandardItem(f'{num}%')])
         self.tableViewCatalyzer.clearSelection()
         self.tableViewCatalyzer.selectRow(len(self.catalyzers) - 1)

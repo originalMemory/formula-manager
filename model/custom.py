@@ -5,7 +5,7 @@
 @ide     : PyCharm
 @file    : custom
 @author  : illusion
-@desc    : 
+@desc    :
 @create  : 2021/8/14
 """
 from dataclasses import dataclass
@@ -19,5 +19,5 @@ class Custom:
 
     @staticmethod
     def from_dict(di):
-        formula_ids = [int(x) for x in di['formula_ids'].split(';') if x.isdigit()]
+        formula_ids = [int(x) for x in di['formula_ids'].split(',') if x.isdigit()]
         return Custom(custom_id=di['id'], name=di['name'], formula_ids=formula_ids)

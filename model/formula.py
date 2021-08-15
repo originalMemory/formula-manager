@@ -23,7 +23,7 @@ class FormulaItem:
         tup = string.split(';')
         if not len(tup):
             return None
-        return FormulaItem(name=tup[0], value=tup[1])
+        return FormulaItem(name=tup[0], value=float(tup[1]))
 
 
 @dataclass
