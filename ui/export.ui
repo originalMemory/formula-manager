@@ -55,7 +55,7 @@
       <property name="geometry">
        <rect>
         <x>30</x>
-        <y>70</y>
+        <y>72</y>
         <width>40</width>
         <height>20</height>
        </rect>
@@ -68,7 +68,7 @@
       <property name="geometry">
        <rect>
         <x>70</x>
-        <y>70</y>
+        <y>72</y>
         <width>111</width>
         <height>20</height>
        </rect>
@@ -77,8 +77,8 @@
      <widget class="QLabel" name="label_3">
       <property name="geometry">
        <rect>
-        <x>30</x>
-        <y>100</y>
+        <x>320</x>
+        <y>40</y>
         <width>40</width>
         <height>20</height>
        </rect>
@@ -90,8 +90,8 @@
      <widget class="QLineEdit" name="lineEditWeight">
       <property name="geometry">
        <rect>
-        <x>70</x>
-        <y>100</y>
+        <x>360</x>
+        <y>40</y>
         <width>111</width>
         <height>20</height>
        </rect>
@@ -101,7 +101,7 @@
       <property name="geometry">
        <rect>
         <x>220</x>
-        <y>50</y>
+        <y>40</y>
         <width>75</width>
         <height>23</height>
        </rect>
@@ -114,13 +114,26 @@
       <property name="geometry">
        <rect>
         <x>220</x>
-        <y>90</y>
+        <y>70</y>
         <width>75</width>
         <height>23</height>
        </rect>
       </property>
       <property name="text">
        <string>导出Excel</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonCompute">
+      <property name="geometry">
+       <rect>
+        <x>490</x>
+        <y>37</y>
+        <width>75</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>计算总量</string>
       </property>
      </widget>
     </widget>
@@ -135,7 +148,11 @@
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
-       <widget class="QTableView" name="tableView"/>
+       <widget class="QTableView" name="tableView">
+        <property name="editTriggers">
+         <set>QAbstractItemView::NoEditTriggers</set>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
