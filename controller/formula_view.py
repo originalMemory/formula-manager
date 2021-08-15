@@ -10,14 +10,13 @@
 import math
 from functools import partial
 
-from PyQt5.QtCore import QModelIndex, Qt
+from PyQt5.QtCore import QModelIndex
 from PyQt5.QtGui import QDoubleValidator, QStandardItemModel, QStandardItem
 from PyQt5.QtWidgets import QWidget, QMessageBox
 
 from db_helper import db_helper
 from model.formula import Formula, FormulaItem
 from model.formula_list_model import FormulaListModel
-from model.my_list_model import MyListModel
 from ui.formula import Ui_Formula
 
 
@@ -168,6 +167,8 @@ class FormulaView(QWidget, Ui_Formula):
 
         self.count = db_helper.get_table_count('select count(*) from formula where 1=1 ' + self.where_sql)
         max_page = math.ceil(self.count / self.page_size)
+        if max_page == 0:
+            max_page = 1
         page_str = f'{self.page_index + 1}/{max_page}'
         self.labelPage.setText(page_str)
 

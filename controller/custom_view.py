@@ -135,6 +135,8 @@ class CustomView(QWidget, Ui_Custom):
             QMessageBox.information(self, "提示", "已经是第1页了！", QMessageBox.Ok)
             return
         max_page = math.ceil(self.count / self.page_size)
+        if max_page == 0:
+            max_page = 1
         if self.page_index >= max_page:
             self.page_index = max_page - 1
             QMessageBox.information(self, "提示", "已经是最后1页了！", QMessageBox.Ok)
